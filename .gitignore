@@ -1,0 +1,32 @@
+# --- Secrets: never commit these ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.json
+credentials.json
+
+# --- Virtual environments ---
+my_env/
+venv/
+.venv/
+env/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Generated output (rules are the source, reports are the product) ---
+reports/*
+!reports/.gitkeep
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
