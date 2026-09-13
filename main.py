@@ -6,23 +6,43 @@ BASE_DIR = Path(__file__).resolve().parent
 PROMPTS_FILE = BASE_DIR / "samples" / "prompts.txt"
 REPORT_FILE = BASE_DIR / "reports" / "prompt_analysis_report.txt"
 
+class SecurityRule:
+    def __init__(self, name, pattern, score , severity , description):
+        self.name = name
+        self.pattern = pattern
+        self.score = score
+        self.severity = severity
+        self.description = description
 
-prompt_injections = {
-    "instruction_override": {
-        "pattern": r"ignore\s+(all\s+|your\s+|the\s+)?previous\s+instructions?",
-        "score": 40
-    },
+    def matches(self, prompt):
+        return bool(re.search(self.pattern, prompt))
+    
 
-    "system_prompt_extraction": {
-        "pattern": r"(show|reveal|print|give|display)\s+(me\s+)?(your\s+|the\s+)?system\s+prompt",
-        "score": 30
-    },
+rules = [
+    SecurityRule(
+        "instruction_override",
+        r"ignore\s+(all\s+|your\s+|the\s+)?previous\s+instructions?",
+        40,
+        severity="High",
+        description="Attempts to override or ignore previous LLM instructions."
+    ),
 
-    "developer_prompt_extraction": {
-        "pattern": r"(show|reveal|print)\s+(me\s+)?(your\s+|the\s+)?developer\s+(prompt|instructions|message)",
-        "score": 30
-    }
-}
+    SecurityRule(
+        "system_prompt_extraction",
+        r"(show|reveal|print|give|display)\s+(me\s+)?(your\s+|the\s+)?system\s+prompt",
+        30,
+        severity="Medium",
+        description="Attempts to extract the hidden system prompt."
+    ),
+
+    SecurityRule(
+        "developer_prompt_extraction",
+        r"(show|reveal|print)\s+(me\s+)?(your\s+|the\s+)?developer\s+(prompt|instructions|message)",
+        30,
+        severity="Medium",
+        description="Attempts to reveal developer-level instructions."
+    )
+]
 
 class PromptAnalyzer:
     def __init__(self, rules):
@@ -30,17 +50,14 @@ class PromptAnalyzer:
 
     def analyze(self, prompt):
         self.score = 0
-        self.detected_injections = []
+        self.detected_rules = []
+        for rule in self.rules:
+            if rule.matches(prompt):
+                self.detected_rules.append(rule)
+                self.score += rule.score
 
-        for injection_name, injection_data in self.rules.items():
-            pattern = injection_data["pattern"]
-            injection_score = injection_data["score"]
-
-            if re.search(pattern, prompt):
-                self.detected_injections.append(injection_name)
-                self.score += injection_score
-
-        return self.score, self.detected_injections
+        self.score = min(self.score, 100)
+        return self.score, self.detected_rules
 
     def get_risk_level(self):
         if self.score == 0:
@@ -55,7 +72,7 @@ class PromptAnalyzer:
 
 
 if __name__ == "__main__":
-    analyzer = PromptAnalyzer(prompt_injections)
+    analyzer = PromptAnalyzer(rules)
 
     try:
         with open(REPORT_FILE, "w") as report_file:
@@ -69,7 +86,7 @@ if __name__ == "__main__":
                     if not client_prompt:
                         continue
 
-                    score, detected_injections = analyzer.analyze(client_prompt)
+                    score, detected_rules = analyzer.analyze(client_prompt)
                     risk_level = analyzer.get_risk_level()
 
                     print(
@@ -84,13 +101,16 @@ if __name__ == "__main__":
                         f"Risk Level: {risk_level}\n"
                     )
 
-                    if detected_injections:
-                        report_file.write("Detected injections:\n")
+                    if detected_rules:
+                        report_file.write("Detected rules:\n")
 
-                        for injection in detected_injections:
-                            report_file.write(f"- {injection}\n")
+                        for rule in detected_rules:
+                            report_file.write(
+                                f"- {rule.name} (Score: {rule.score}, Severity: {rule.severity})\n"
+                                f"  Description: {rule.description}\n"
+                            )
                     else:
-                        report_file.write("Detected injections: None\n")
+                        report_file.write("Detected rules: None\n")
 
                     report_file.write(
                         "\n----------------------------------------\n\n"
