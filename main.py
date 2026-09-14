@@ -18,8 +18,12 @@ def create_stats():
         "threats": 0
     }
 
-def analyze_single_prompt(analyzer):
-    stats = create_stats()
+def record(stats, risk_level, detected_rules):
+    stats["total"] += 1
+    stats[risk_level] += 1
+    stats["threats"] += len(detected_rules)
+
+def analyze_single_prompt(analyzer, session_stats):
     prompt = input("Enter the prompt to analyze: ").strip().lower()
 
     if not prompt:
@@ -29,18 +33,13 @@ def analyze_single_prompt(analyzer):
     score, detected_rules = analyzer.analyze(prompt)
     risk_level = analyzer.get_risk_level()
 
-    stats["total"] += 1
-    stats[risk_level] += 1
-    if detected_rules:
-        stats["threats"] += len(detected_rules)
-    result = format_result(prompt, score, risk_level, detected_rules)
-    summary = format_summary(stats)
+    record(session_stats, risk_level, detected_rules)
 
-    print(result)
-    print(summary)
+    print(format_result(prompt, score, risk_level, detected_rules))
+    print(format_summary(session_stats, "Session Summary"))
 
-def analyze_prompts_from_file(analyzer, file_path, report_path):
-    stats = create_stats()
+def analyze_prompts_from_file(analyzer, file_path, report_path, session_stats):
+    run_stats = create_stats()
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -58,11 +57,8 @@ def analyze_prompts_from_file(analyzer, file_path, report_path):
                     score, detected_rules = analyzer.analyze(client_prompt)
                     risk_level = analyzer.get_risk_level()
 
-                    stats["total"] += 1
-                    stats[risk_level] += 1
-
-                    if detected_rules:
-                        stats["threats"] += len(detected_rules)
+                    record(run_stats, risk_level, detected_rules)
+                    record(session_stats, risk_level, detected_rules)
 
                     result = format_result(
                         client_prompt,
@@ -74,19 +70,17 @@ def analyze_prompts_from_file(analyzer, file_path, report_path):
                     print(result)
                     report_file.write(result)
 
-                summary = format_summary(stats)
+                report_file.write(format_summary(run_stats))
 
-                print(summary)
-                report_file.write(summary)
-
+        print(format_summary(session_stats, "Session Summary"))
         print(f"Analysis report saved to {report_path}")
 
     except FileNotFoundError as error:
         print(f"File error: {error}")
 
 def main():
-
     analyzer = PromptAnalyzer(rules)
+    session_stats = create_stats()
 
     while True:
         print("\nPromptShield")
@@ -98,10 +92,12 @@ def main():
         choice = input("\nChoose an option: ")
 
         if choice == "1":
-            analyze_single_prompt(analyzer)
+            analyze_single_prompt(analyzer, session_stats)
 
         elif choice == "2":
-            analyze_prompts_from_file(analyzer, PROMPTS_FILE, REPORT_FILE)
+            analyze_prompts_from_file(
+                analyzer, PROMPTS_FILE, REPORT_FILE, session_stats
+            )
 
         elif choice == "3":
             print("Goodbye!")
