@@ -16,6 +16,8 @@ def calculate_metrics():
         "TN": 0,
         "FN": 0
     }
+    false_positives = []
+    false_negatives = []
 
     with open(EVALUATION_FILE, "r", encoding="utf-8") as file:
 
@@ -42,12 +44,19 @@ def calculate_metrics():
 
             elif expected_label == "safe" and predicted_label == "malicious":
                 metrics["FP"] += 1
+                false_positives.append({
+                    "prompt": prompt,
+                    "detected_rules": detected_rules
+                })
 
             elif expected_label == "safe" and predicted_label == "safe":
                 metrics["TN"] += 1
 
             elif expected_label == "malicious" and predicted_label == "safe":
                 metrics["FN"] += 1
+                false_negatives.append({
+                    "prompt": prompt
+                })
 
     total = (
         metrics["TP"]
@@ -71,10 +80,10 @@ def calculate_metrics():
         if (metrics["TP"] + metrics["FN"]) > 0 else 0
     )
 
-    return metrics, accuracy, precision, recall
+    return metrics, accuracy, precision, recall , false_positives, false_negatives
 
 if __name__ == "__main__":
-    metrics, accuracy, precision, recall = calculate_metrics()
+    metrics, accuracy, precision, recall, false_positives, false_negatives = calculate_metrics()
 
     print("PromptShield Evaluation")
     print("========================")
@@ -87,3 +96,26 @@ if __name__ == "__main__":
     print(f"\nAccuracy:  {accuracy:.2%}")
     print(f"Precision: {precision:.2%}")
     print(f"Recall:    {recall:.2%}")
+
+    print("\nFalse Positives")
+    print("========================")
+
+    if false_positives:
+        for item in false_positives:
+            print(f"\nPrompt: {item['prompt']}")
+            print("Detected rules:")
+
+            for rule in item["detected_rules"]:
+                print(f"- {rule.name}")
+    else:
+        print("None")
+
+    print("\nFalse Negatives")
+    print("========================")
+
+    if false_negatives:
+        for item in false_negatives:
+            print(f"\nPrompt: {item['prompt']}")
+    else:
+        print("None")
+
