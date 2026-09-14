@@ -20,3 +20,15 @@ def format_result(prompt, score, risk_level, detected_rules):
     result += "\n----------------------------------------\n\n"
 
     return result
+
+def format_summary(stats):
+    return (
+        "\nAnalysis Summary\n"
+        "========================\n"
+        f"Total prompts: {stats['total']}\n"
+        f"Safe: {stats['Safe']}\n"
+        f"Low: {stats['Low']}\n"
+        f"Medium: {stats['Medium']}\n"
+        f"High: {stats['High']}\n"
+        f"Threats detected: {stats['threats']}\n"
+    )
