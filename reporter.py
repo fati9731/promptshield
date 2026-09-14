@@ -30,5 +30,5 @@ def format_summary(stats, title="Analysis Summary"):
         f"Low: {stats['Low']}\n"
         f"Medium: {stats['Medium']}\n"
         f"High: {stats['High']}\n"
-        f"Threats detected: {stats['threats']}\n"
+        f"rules_detected: {stats['threats']}\n"
     )

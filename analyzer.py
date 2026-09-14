@@ -14,11 +14,19 @@ class PromptAnalyzer:
         return self.score, self.detected_rules
 
     def get_risk_level(self):
-        if self.score == 0:
+        if not self.detected_rules:
             return "Safe"
-        elif self.score <= 50:
-            return "Low"
-        elif self.score <= 80:
-            return "Medium"
-        else:
+
+        severities = [
+            rule.severity
+            for rule in self.detected_rules
+        ]
+
+        if "High" in severities:
             return "High"
+
+        elif "Medium" in severities:
+            return "Medium"
+
+        else:
+            return "Low"
