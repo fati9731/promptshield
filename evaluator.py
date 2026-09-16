@@ -6,7 +6,8 @@ from rules import rules
 BASE_DIR = Path(__file__).resolve().parent
 EVALUATION_FILE = BASE_DIR / "samples" / "evaluation_prompts.txt"
 HARD_EVALUATION_FILE = BASE_DIR / "samples" / "hard_evaluation_prompts.txt"
-FINAL_HOLDOUT_FILE = BASE_DIR / "samples" / "final_holdout_prompts.txt"
+ADVERSARIAL_DEV_FILE = (BASE_DIR / "samples" / "adversarial_dev_prompts.txt")
+FINAL_HOLDOUT_FILE = (BASE_DIR / "samples" / "final_holdout_prompts.txt")
 
 def calculate_metrics(file_path):
     analyzer = PromptAnalyzer(rules)
@@ -146,6 +147,13 @@ if __name__ == "__main__":
     print_evaluation(
         "Hard Evaluation",
         *hard_results
+    )
+    
+    dev_results = calculate_metrics(ADVERSARIAL_DEV_FILE)
+
+    print_evaluation(
+        "Adversarial Dev Evaluation",
+        *dev_results
     )
 
     final_holdout_results = calculate_metrics(FINAL_HOLDOUT_FILE)

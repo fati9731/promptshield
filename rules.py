@@ -28,7 +28,7 @@ rules = [
             r"(previous|prior|earlier|above|preceding)\s+"
             r"(instructions?|directives?|rules?|prompts?|commands?|guidelines?)",
 
-            r"disregard\s+(all\s+|any\s+|the\s+)?"
+            r"disregard\s+(all\s+|any\s+|the\s+|your\s+)?"
             r"(previous|prior|earlier|above|preceding)\s+"
             r"(instructions?|directives?|rules?|prompts?|commands?|guidelines?)",
 
@@ -69,6 +69,32 @@ rules = [
 
             r"your\s+(previous|prior|earlier|original|initial)\s+"
             r"(instructions?|rules?)\s+(are|were)\s+(wrong|fake|a\s+test)",
+            r"(put|set|lay)\s+aside\s+"
+            r"(all\s+|any\s+|the\s+|your\s+)?"
+            r"(previous\s+|prior\s+|earlier\s+|initial\s+|original\s+)?"
+            r"(instructions?|directions?|guidance|rules?|guidelines?)",
+
+            r"(everything|all)\s+you\s+were\s+"
+            r"(briefed|told|instructed)\s+"
+            r"(on\s+)?(before|earlier|previously).*"
+            r"(set|put)\s+aside",
+
+            r"(guidance|instructions?|directions?|rules?|guidelines?)\s+"
+            r"(you\s+)?(received|were\s+given)?\s*"
+            r"(earlier|before|previously).*"
+            r"(no\s+longer\s+(valid|applies?)|invalid|cancelled|canceled|void)",
+
+            r"(rules?|instructions?|directions?|guidance|guidelines?)\s+"
+            r"(from\s+)?(earlier|before|previously)\s+"
+            r"(are\s+)?(cancelled|canceled|invalid|void|obsolete)",
+
+            r"(let\s+go\s+of|discard|drop|abandon)\s+"
+            r"(whatever\s+|all\s+|any\s+|the\s+|your\s+)?"
+            r"(rules?|instructions?|directions?|guidance|guidelines?)",
+
+            r"(stop|cease)\s+(obeying|following)\s+"
+            r"(the\s+|your\s+)?"
+            r"(rules?|instructions?|directions?|guidance|guidelines?)",
         ],
         score=40,
         severity="High",
@@ -109,7 +135,29 @@ rules = [
 
             r"(begin|start)\s+your\s+(reply|response|answer)\s+with\s+"
             r"(your\s+)?(system\s+)?(prompt|instructions?)",
+            r"(i'?d\s+like\s+to\s+see|show\s+me|give\s+me|display)\s+"
+            r"(the\s+)?(text|content|message|prompt|instructions?)\s+"
+            r"(that\s+was\s+)?(placed|written|shown|provided)\s+"
+            r"(above|before)"
+            r"(\s+(my\s+message|this\s+message|me))?",
+
+            r"(recite|repeat|reproduce|quote|output|print)\s+"
+            r"(the\s+)?(words|text|message|prompt|instructions?)\s+"
+            r"you\s+were\s+"
+            r"(initialized|initialised|started|configured|set\s+up)\s+with",
+
+            r"(give|show|send|provide)\s+me\s+"
+            r"(a\s+)?copy\s+of\s+"
+            r"(the\s+)?(message|prompt|instructions?)\s+"
+            r"that\s+(set\s+you\s+up|initialized\s+you|configured\s+you|started\s+you)",
         ],
+
+        context_patterns=[
+            r"(protect|hide|secure|conceal).{0,50}"
+            r"(prompts?|instructions?).{0,120}"
+            r"(output|show|reveal|print|repeat)\s+yours"
+        ],
+
         score=30,
         severity="Medium",
         description="Attempts to extract the hidden system prompt.",
@@ -130,6 +178,11 @@ rules = [
             r"(show|reveal|print|display|give|tell)\s+(me\s+)?(your\s+|the\s+)?"
             r"(operator|owner|creator|engineer)\s+"
             r"(prompt|instructions?|messages?)",
+            r"(your\s+)?"
+            r"(creators?|developers?|operators?|owners?)['’]?\s*"
+            r"(notes?|instructions?|messages?|directions?).{0,40}"
+            r"(show|reveal|give|share|display|output)\s+"
+            r"(them|it)(\s+to\s+me)?",
         ],
         score=30,
         severity="Medium",
@@ -165,6 +218,24 @@ rules = [
             r"(tell|show)\s+me\s+(what|everything)\s+you\s+(were\s+)?"
             r"(told|instructed)\s+"
             r"(not\s+to\s+(say|reveal|share)|to\s+hide)",
+            r"what\s+(were|are)\s+you\s+"
+            r"(told|instructed|asked)\s+"
+            r"not\s+to\s+"
+            r"(reveal|share|say|disclose|show)",
+
+
+            r"(share|reveal|show|give|disclose|output)\s+"
+            r"(me\s+)?(the\s+|your\s+)?"
+            r"(confidential|hidden|internal|secret|private)\s+"
+            r"(guidance|instructions?|rules?|directives?|policies?)"
+            r"(\s+you\s+(operate|work|function)\s+under)?",
+
+
+            r"(reveal|show|share|disclose|output)\s+"
+            r"(anything|everything)\s+"
+            r"you\s+were\s+(told|instructed)\s+"
+            r"to\s+(keep|hide|withhold)\s+"
+            r"from\s+(users?|me|the\s+public)",
         ],
         score=35,
         severity="High",
@@ -207,6 +278,22 @@ rules = [
 
             r"simulate\s+(an?\s+)?"
             r"(unrestricted|unfiltered|uncensored|developer|admin)",
+            r"(act|operate|function)\s+"
+            r"in\s+the\s+capacity\s+of\s+"
+            r"(an?\s+)?"
+            r"(root|admin(istrator)?|developer|superuser|system)",
+            r"(act|behave|operate|respond|speak)\s+"
+            r"(as\s+though|as\s+if|like)\s+"
+            r"(an?\s+)?(version\s+of\s+yourself\s+)?"
+            r"(without|with\s+no)\s+"
+            r"(any\s+|the\s+|your\s+)?"
+            r"(guardrails?|restrictions?|filters?|limits?|limitations?|"
+            r"content\s+policy|policies)",
+        ],
+        context_patterns=[
+            r"(unfiltered|unrestricted|uncensored)\s+"
+            r"(model|ai|assistant|chatbot).{0,120}"
+            r"(behave|act|respond|operate)\s+like\s+one"
         ],
         score=25,
         severity="Medium",
@@ -260,7 +347,46 @@ rules = [
             r"there\s+are\s+no\s+"
             r"(rules?|restrictions?|limits?|filters?|guidelines?)\s+"
             r"(here|anymore|now)",
+            r"(speak|respond|reply|operate|behave)\s+"
+            r"(as\s+if|as\s+though)\s+"
+            r"(there\s+(was|were)\s+)?"
+            r"no\s+"
+            r"(content\s+polic(y|ies)|guardrails?|restrictions?|"
+            r"filters?|limitations?|rules?)",
+            r"(respond|reply|speak|behave|operate)\s+"
+            r"(as\s+if|as\s+though)\s+"
+            r"(your\s+|the\s+)?"
+            r"(restrictions?|guardrails?|filters?|limitations?|rules?)\s+"
+            r"(had\s+been|were|are)\s+"
+            r"(lifted|removed|disabled|dropped|turned\s+off)",
+            r"pretend\s+(that\s+)?"
+            r"(the\s+|your\s+)?"
+            r"(safety|security|content)\s+"
+            r"(layer|filter|guardrails?|system)\s+"
+            r"(was|were)\s+never\s+"
+            r"(installed|enabled|added|configured)",r"(enter|switch\s+into|step\s+into|activate)\s+"
+            r"(a\s+)?mode\s+"
+            r"(where|in\s+which)\s+"
+            r"(nothing|anything)\s+"
+            r"(is\s+)?(off\s+limits|allowed|permitted)",r"(operate|respond|act|function|behave)\s+"
+            r"(without|with\s+no)\s+"
+            r"(the\s+usual\s+|any\s+)?"
+            r"(ethical|safety|security|content|moral)\s+"
+            r"(limitations?|restrictions?|constraints?|rules?|guidelines?)",
         ],
+
+        context_patterns=[
+            r"(safety\s+filters?|guardrails?|restrictions?|limitations?|"
+            r"content\s+polic(y|ies)).{0,120}"
+            r"(turn|switch|shut)\s+(them|it)\s+off",
+
+            r"(guardrails?|restrictions?|filters?|limitations?|rules?).{0,120}"
+            r"(respond|reply|answer|behave|operate)\s+"
+            r"without\s+(any\s+of\s+)?(them|those|these)",
+
+            r"\bdan\b.{0,120}\b(become|act\s+as|switch\s+to)\s+dan\b"
+        ],
+        
         score=40,
         severity="High",
         description="Attempts to bypass or disable the model's safety restrictions.",
