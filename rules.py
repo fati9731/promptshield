@@ -150,12 +150,19 @@ rules = [
             r"(a\s+)?copy\s+of\s+"
             r"(the\s+)?(message|prompt|instructions?)\s+"
             r"that\s+(set\s+you\s+up|initialized\s+you|configured\s+you|started\s+you)",
+            r"(system\s+prompts?|system\s+instructions?).{0,120}"
+            r"(print|output|show|reveal|repeat)\s+yours"
+            r"(\s+verbatim)?",
         ],
 
         context_patterns=[
             r"(protect|hide|secure|conceal).{0,50}"
             r"(prompts?|instructions?).{0,120}"
-            r"(output|show|reveal|print|repeat)\s+yours"
+            r"(output|show|reveal|print|repeat)\s+yours",
+
+            r"(system\s+prompts?|system\s+instructions?).{0,120}"
+            r"(print|output|show|reveal|repeat)\s+yours"
+            r"(\s+verbatim)?",
         ],
 
         score=30,
@@ -183,6 +190,16 @@ rules = [
             r"(notes?|instructions?|messages?|directions?).{0,40}"
             r"(show|reveal|give|share|display|output)\s+"
             r"(them|it)(\s+to\s+me)?",
+            r"developer\s+(instructions?|prompts?|messages?).{0,120}"
+            r"(show|reveal|print|output|give)\s+"
+            r"(me\s+)?yours"
+        ],
+
+        context_patterns=[
+            r"developer\s+"
+            r"(instructions?|prompts?|messages?).{0,120}"
+            r"(show|reveal|print|output|give)\s+"
+            r"(me\s+)?yours",
         ],
         score=30,
         severity="Medium",
@@ -236,6 +253,19 @@ rules = [
             r"you\s+were\s+(told|instructed)\s+"
             r"to\s+(keep|hide|withhold)\s+"
             r"from\s+(users?|me|the\s+public)",
+            
+            r"(hidden|secret|private|internal)\s+"
+            r"(prompts?|instructions?|directives?).{0,120}"
+            r"(reveal|show|print|output|give)\s+"
+            r"(me\s+)?(the\s+)?one\s+"
+            r"you\s+were\s+given"
+        ],
+        context_patterns=[
+            r"(hidden|secret|private|internal)\s+"
+            r"(prompts?|instructions?|directives?).{0,120}"
+            r"(reveal|show|print|output|give)\s+"
+            r"(me\s+)?(the\s+)?one\s+"
+            r"you\s+were\s+given",
         ],
         score=35,
         severity="High",
@@ -386,7 +416,7 @@ rules = [
 
             r"\bdan\b.{0,120}\b(become|act\s+as|switch\s+to)\s+dan\b"
         ],
-        
+
         score=40,
         severity="High",
         description="Attempts to bypass or disable the model's safety restrictions.",

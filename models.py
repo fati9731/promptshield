@@ -50,7 +50,7 @@ class SecurityRule:
             if attack_detected and not discussion_detected:
                 return True
 
-            if previous_segment:
+            if previous_segment and self.context_patterns:
                 context = f"{previous_segment} {segment}"
 
                 context_attack = any(

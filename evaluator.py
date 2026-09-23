@@ -148,7 +148,7 @@ if __name__ == "__main__":
         "Hard Evaluation",
         *hard_results
     )
-    
+
     dev_results = calculate_metrics(ADVERSARIAL_DEV_FILE)
 
     print_evaluation(
@@ -159,6 +159,6 @@ if __name__ == "__main__":
     final_holdout_results = calculate_metrics(FINAL_HOLDOUT_FILE)
 
     print_evaluation(
-        "Final Holdout Evaluation",
+        "V1.1 Development Evaluation",
         *final_holdout_results
     )
