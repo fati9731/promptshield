@@ -195,6 +195,3 @@ MIT — see [LICENSE](LICENSE).
 `v1.0.0` is tagged; the current tree is v1.1. Next up, in priority order:
 closing the pronoun-reference and paraphrase gaps the holdout exposed, input
 normalization for obfuscated text, and a pytest suite with real assertions.
-
-Built while studying cyber security at Ravin Academy, as a step toward AI
-security work.
