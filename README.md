@@ -186,6 +186,10 @@ reports/        generated output (git-ignored)
 
 Python 3.13, standard library only — no dependencies.
 
+## License
+
+MIT — see [LICENSE](LICENSE).
+
 ## Status
 
 `v1.0.0` is tagged; the current tree is v1.1. Next up, in priority order:
