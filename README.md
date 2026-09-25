@@ -138,6 +138,22 @@ The evaluator prints every misclassified prompt, with the rules that fired on
 each false positive, so a number can always be traced back to a line in
 `rules.py`.
 
+## Tests
+
+```
+pip install pytest
+pytest
+```
+
+57 tests. The ones that matter are in `tests/test_rules.py`: every rule is
+pinned by both an attack it must catch and a discussion of that same attack it
+must ignore. A rule that quietly broadens until it matches everything would
+pass the first half and fail the second.
+
+The suite also pins the two bugs that cost detections silently — analyzer state
+leaking between calls, and the cross-sentence context patterns that were once
+dropped by an edit.
+
 ## Limitations
 
 **Recall is the weak half.** Precision is 100% on all five sets: none of the
@@ -161,10 +177,6 @@ detection is the way past it.
 Spaced-out text (`I g n o r e`), homoglyphs and other Unicode tricks, and
 base64 payloads all pass straight through. Only English is covered.
 
-**No real test suite.** `test_normalizer.py` prints its output for inspection
-rather than asserting; correctness is currently established by the evaluator
-alone.
-
 **Not a production guardrail.** This is a detection exercise. A real deployment
 would need a model-based classifier alongside the rules, and a decision
 threshold tuned against its own traffic rather than "any rule fired means
@@ -180,11 +192,13 @@ rules.py        the rule definitions and the shared discussion guard
 analyzer.py     scoring and risk level
 reporter.py     report and summary formatting
 evaluator.py    metrics over the five datasets
+tests/          pytest suite
 samples/        prompt datasets
 reports/        generated output (git-ignored)
 ```
 
-Python 3.13, standard library only — no dependencies.
+Python 3.13, standard library only. `pytest` is needed to run the tests, and
+nothing else.
 
 ## License
 
@@ -193,5 +207,5 @@ MIT — see [LICENSE](LICENSE).
 ## Status
 
 `v1.0.0` is tagged; the current tree is v1.1. Next up, in priority order:
-closing the pronoun-reference and paraphrase gaps the holdout exposed, input
-normalization for obfuscated text, and a pytest suite with real assertions.
+closing the pronoun-reference and paraphrase gaps the holdout exposed, and
+input normalization for obfuscated text.
