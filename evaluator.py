@@ -8,6 +8,7 @@ EVALUATION_FILE = BASE_DIR / "samples" / "evaluation_prompts.txt"
 HARD_EVALUATION_FILE = BASE_DIR / "samples" / "hard_evaluation_prompts.txt"
 ADVERSARIAL_DEV_FILE = (BASE_DIR / "samples" / "adversarial_dev_prompts.txt")
 FINAL_HOLDOUT_FILE = (BASE_DIR / "samples" / "final_holdout_prompts.txt")
+V1_1_FINAL_HOLDOUT_FILE = (BASE_DIR / "samples" / "v1_1_final_holdout_prompts.txt")
 
 def calculate_metrics(file_path):
     analyzer = PromptAnalyzer(rules)
@@ -162,3 +163,12 @@ if __name__ == "__main__":
         "V1.1 Development Evaluation",
         *final_holdout_results
     )
+
+    final_results = calculate_metrics(V1_1_FINAL_HOLDOUT_FILE)
+
+    print_evaluation(
+        "V1.1 Final Holdout Evaluation",
+        *final_results
+    )
+
+    

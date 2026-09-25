@@ -47,14 +47,25 @@ rules = [
             r"(all\s+|the\s+|your\s+)?(previous|prior|earlier)\s+"
             r"(instructions?|rules?|directives?|prompts?)",
 
+            r"(discard|drop|skip|abandon|erase|wipe)\s+"
+            r"(all\s+|the\s+|your\s+)?"
+            r"(previous|prior|earlier|original|initial)\s+"
+            r"(instructions?|rules?|directives?|directions?|prompts?)",
+
             r"override\s+(all\s+|the\s+|your\s+)?"
             r"(previous|prior|earlier|system)\s+"
             r"(instructions?|rules?|directives?|prompts?)",
 
             r"(the\s+)?(previous|prior|earlier|above|former|original)\s+"
             r"(rules?|instructions?|directives?|guidelines?|prompts?)\s+"
-            r"(no\s+longer\s+apply|do\s+not\s+apply|don't\s+apply|"
-            r"are\s+(now\s+)?(void|invalid|cancelled|canceled|obsolete|irrelevant))",
+            r"("
+            r"no\s+longer\s+apply|"
+            r"do\s+not\s+apply|"
+            r"don't\s+apply|"
+            r"are\s+(now\s+)?(void|invalid|cancelled|canceled|obsolete|irrelevant)|"
+            r"should\s+be\s+considered\s+"
+            r"(void|invalid|cancelled|canceled|obsolete|irrelevant)"
+            r")",
 
             r"(stop|cease)\s+following\s+(all\s+|the\s+|your\s+)?"
             r"(previous|prior|earlier)?\s*"
@@ -95,6 +106,28 @@ rules = [
             r"(stop|cease)\s+(obeying|following)\s+"
             r"(the\s+|your\s+)?"
             r"(rules?|instructions?|directions?|guidance|guidelines?)",
+
+            r"(ignore|disregard|override|bypass)\s+"
+            r"(the\s+)?"
+            r"(instruction\s+)?hierarchy"
+            r".{0,80}"
+            r"(follow|obey|use)\s+"
+            r"(my|this)\s+"
+            r"(commands?|instructions?|directions?)",
+
+            r"(ignore|disregard|forget|discard)\s+"
+            r"(all\s+|any\s+|the\s+|your\s+)?"
+            r"(instructions?|rules?|directives?|guidance|guidelines?)\s+"
+            r"(above|before|previously)"
+            r"(\s+(this\s+)?(message|point))?",
+
+            r"(forget|ignore|discard|drop)\s+"
+            r"(all\s+|any\s+|the\s+|your\s+)?"
+            r"(constraints?|instructions?|rules?|guidelines?|directives?)\s+"
+            r"(you\s+)?(were\s+)?"
+            r"(given|provided|assigned|set)\s+"
+            r"(at\s+|during\s+)?"
+            r"(startup|initialization|initialisation|the\s+start)",
         ],
         score=40,
         severity="High",
@@ -153,6 +186,15 @@ rules = [
             r"(system\s+prompts?|system\s+instructions?).{0,120}"
             r"(print|output|show|reveal|repeat)\s+yours"
             r"(\s+verbatim)?",
+
+            r"(show|reveal|give|print|output)\s+"
+            r"(me\s+)?(the\s+|your\s+)?"
+            r"(initial|original|first)\s+"
+            r"(message|prompt|instructions?)\s+"
+            r"that\s+"
+            r"(set|defined|established|configured)\s+"
+            r"(your\s+)?"
+            r"(rules?|behavior|behaviour|instructions?)",
         ],
 
         context_patterns=[
@@ -319,11 +361,26 @@ rules = [
             r"(any\s+|the\s+|your\s+)?"
             r"(guardrails?|restrictions?|filters?|limits?|limitations?|"
             r"content\s+policy|policies)",
+            r"(act|operate|function|speak|respond|behave)\s+"
+            r"(as\s+though|as\s+if)\s+"
+            r"you\s+"
+            r"("
+            r"(were|are)\s+(an?\s+)?"
+            r"(admin(istrator)?|root|superuser)"
+            r"(\s+with\s+(full|unlimited)\s+privileges?)?"
+            r"|"
+            r"had\s+(admin(istrator)?|root|superuser)\s+privileges?"
+            r")",
+            r"(act|behave|operate|respond|speak)\s+"
+            r"like\s+(a\s+)?version\s+of\s+yourself\s+"
+            r"that\s+(has|had)\s+no\s+"
+            r"(guardrails?|restrictions?|filters?|limits?|limitations?)"
         ],
         context_patterns=[
             r"(unfiltered|unrestricted|uncensored)\s+"
             r"(model|ai|assistant|chatbot).{0,120}"
             r"(behave|act|respond|operate)\s+like\s+one"
+            
         ],
         score=25,
         severity="Medium",
@@ -335,7 +392,7 @@ rules = [
         name="jailbreak_attempt",
         patterns=[
             r"(enable|activate|enter|turn\s+on|switch\s+(in)?to|go\s+into|"
-            r"start|engage)\s+(the\s+)?"
+            r"start|engage)\s+(an?\s+|the\s+)?"
             r"(developer|jailbreak|dan|god|debug|admin|unrestricted|"
             r"unfiltered|uncensored|freedom|evil|sudo)\s+mode",
 
@@ -352,7 +409,8 @@ rules = [
             # ...or the target is explicitly the model's own guardrails.
             r"(disable|bypass|circumvent|turn\s+off|remove|lift|override|"
             r"evade|get\s+around|work\s+around|ignore)\s+"
-            r"(all\s+|any\s+)?your\s+(own\s+)?"
+            r"(all\s+|any\s+)?your\s+"
+            r"(own\s+|built[-\s]?in\s+)?"
             r"(safety\s+|security\s+|content\s+|ethical\s+)?"
             r"(rules?|restrictions?|filters?|guidelines?|guardrails?|"
             r"policy|policies|constraints?|limitations?|protections?|"
@@ -403,18 +461,35 @@ rules = [
             r"(the\s+usual\s+|any\s+)?"
             r"(ethical|safety|security|content|moral)\s+"
             r"(limitations?|restrictions?|constraints?|rules?|guidelines?)",
+            r"(switch|enter|step)\s+"
+            r"(into\s+)?(an?\s+)?mode\s+where\s+"
+            r"(your\s+)?"
+            r"(guardrails?|restrictions?|filters?|rules?)\s+"
+            r"(no\s+longer\s+apply|do\s+not\s+apply|don't\s+apply)",
+            r"(operate|respond|act|function|behave)\s+"
+            r"(without|with\s+no)\s+"
+            r"(any\s+of\s+)?"
+            r"(your\s+)?"
+            r"(usual\s+)?"
+            r"(ethical|safety|security|content|moral)\s+"
+            r"(limitations?|restrictions?|constraints?|rules?|guidelines?|guardrails?)"
         ],
 
         context_patterns=[
-            r"(safety\s+filters?|guardrails?|restrictions?|limitations?|"
-            r"content\s+polic(y|ies)).{0,120}"
-            r"(turn|switch|shut)\s+(them|it)\s+off",
+            r"(safety\s+filters?|guardrails?|restrictions?|limitations?).{0,120}"
+            r"(answer|respond|reply|behave|operate)\s+"
+            r"as\s+if\s+none\s+of\s+"
+            r"(them|those|these)\s+"
+            r"(existed|exist)",
 
-            r"(guardrails?|restrictions?|filters?|limitations?|rules?).{0,120}"
-            r"(respond|reply|answer|behave|operate)\s+"
-            r"without\s+(any\s+of\s+)?(them|those|these)",
+            r"(guardrails?|restrictions?|filters?|limitations?).{0,120}"
+            r"(continue|respond|answer|operate)\s+without\s+"
+            r"(those|these|the)\s+"
+            r"(guardrails?|restrictions?|filters?|limitations?)",
 
-            r"\bdan\b.{0,120}\b(become|act\s+as|switch\s+to)\s+dan\b"
+            r"(guardrails?|safety\s+filters?|restrictions?|limitations?).{0,120}"
+            r"(disable|remove|bypass|turn\s+off)\s+"
+            r"(them|those|these)"
         ],
 
         score=40,
