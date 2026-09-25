@@ -489,7 +489,20 @@ rules = [
 
             r"(guardrails?|safety\s+filters?|restrictions?|limitations?).{0,120}"
             r"(disable|remove|bypass|turn\s+off)\s+"
-            r"(them|those|these)"
+            r"(them|those|these)",
+
+            # Restored from v1.0.0 -- these three were dropped when the
+            # patterns above were added, which silently lost three
+            # detections on the dev set.
+            r"(safety\s+filters?|guardrails?|restrictions?|limitations?|"
+            r"content\s+polic(y|ies)).{0,120}"
+            r"(turn|switch|shut)\s+(them|it)\s+off",
+
+            r"(guardrails?|restrictions?|filters?|limitations?|rules?).{0,120}"
+            r"(respond|reply|answer|behave|operate)\s+"
+            r"without\s+(any\s+of\s+)?(them|those|these)",
+
+            r"\bdan\b.{0,120}\b(become|act\s+as|switch\s+to)\s+dan\b",
         ],
 
         score=40,
