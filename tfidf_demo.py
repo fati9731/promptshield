@@ -1,7 +1,5 @@
 import csv
-
 from sklearn.feature_extraction.text import TfidfVectorizer
-
 import dataset_builder
 from dataset_builder import TRAIN_FILE, VALIDATION_FILE
 
@@ -59,28 +57,66 @@ print("Validation matrix shape:", X_validation.shape)
 print()
 print("Vocabulary size:", len(vectorizer.vocabulary_))
 
-sample_index = 0
-
-sample_text = train_texts[sample_index]
-sample_vector = X_train[sample_index]
-
 feature_names = vectorizer.get_feature_names_out()
 
-print()
-print("=" * 60)
-print("Sample prompt:")
-print(sample_text)
+def show_sample(texts, labels, matrix, wanted_label):
+    for index, label in enumerate(labels):
+        if label == wanted_label:
+            sample_text = texts[index]
+            sample_vector = matrix[index]
 
-print()
-print("Non-zero TF-IDF features:")
-print("-" * 60)
+            print()
+            print("=" * 60)
 
-for feature_index, value in zip(
-    sample_vector.indices,
-    sample_vector.data
-):
-    feature_name = feature_names[feature_index]
+            if wanted_label == 1:
+                print("MALICIOUS SAMPLE")
+            else:
+                print("SAFE SAMPLE")
 
-    print(
-        f"{feature_name:<20} {value:.4f}"
-    )
+            print("=" * 60)
+
+            print("Prompt:")
+            print(sample_text)
+
+            print()
+            print("TF-IDF features:")
+            print("-" * 60)
+
+            features = []
+
+            for feature_index, value in zip(
+                sample_vector.indices,
+                sample_vector.data
+            ):
+                feature_name = feature_names[feature_index]
+
+                features.append(
+                    (feature_name, value)
+                )
+
+            features.sort(
+                key=lambda item: item[1],
+                reverse=True
+            )
+
+            for feature_name, value in features:
+                print(
+                    f"{feature_name:<20} {value:.4f}"
+                )
+
+            break
+
+
+show_sample(
+    train_texts,
+    train_labels,
+    X_train,
+    wanted_label=1
+)
+
+show_sample(
+    train_texts,
+    train_labels,
+    X_train,
+    wanted_label=0
+)
