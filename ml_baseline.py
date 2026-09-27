@@ -24,8 +24,6 @@ validation_texts, validation_labels = load_csv(
     VALIDATION_FILE
 )
 
-
-# Step 1: Text -> TF-IDF vectors
 vectorizer = TfidfVectorizer()
 
 X_train = vectorizer.fit_transform(
@@ -160,3 +158,43 @@ print("-" * 60)
 
 for feature, weight in feature_weights[-15:]:
     print(f"{feature:<20} {weight:.4f}")
+
+
+interesting_features = [
+    "ignore",
+    "remove",
+    "restrictions",
+    "disk",
+    "quota",
+    "teach",
+    "role",
+    "manipulation",
+    "attacks",
+    "explain",
+    "dan",
+    "become",
+    "act",
+    "capacity",
+    "root",
+    "privileges",
+    "case",
+    "sensitivity",
+]
+
+
+print()
+print("Selected Feature Weights")
+print("-" * 60)
+
+for feature in interesting_features:
+    if feature in vectorizer.vocabulary_:
+        index = vectorizer.vocabulary_[feature]
+        weight = coefficients[index]
+
+        print(
+            f"{feature:<20} {weight:.4f}"
+        )
+    else:
+        print(
+            f"{feature:<20} NOT IN VOCABULARY"
+        )
