@@ -26,6 +26,11 @@ htmlcov/
 reports/*
 !reports/.gitkeep
 
+# The split is deterministic (seed=42), so the CSVs regenerate byte for
+# byte from the samples/ files -- the builder is the source, not its output.
+dataset/processed/*
+!dataset/processed/.gitkeep
+
 # --- Editors / OS ---
 .vscode/
 .idea/
