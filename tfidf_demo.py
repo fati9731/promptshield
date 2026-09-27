@@ -1,24 +1,9 @@
-from pathlib import Path
 import csv
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-BASE_DIR = Path(__file__).resolve().parent
-
-TRAIN_FILE = (
-    BASE_DIR
-    / "dataset"
-    / "processed"
-    / "train.csv"
-)
-
-VALIDATION_FILE = (
-    BASE_DIR
-    / "dataset"
-    / "processed"
-    / "validation.csv"
-)
+import dataset_builder
+from dataset_builder import TRAIN_FILE, VALIDATION_FILE
 
 
 def load_csv(path):
@@ -37,6 +22,13 @@ def load_csv(path):
             labels.append(int(row["label"]))
 
     return texts, labels
+
+
+# The CSVs are git-ignored, so a fresh checkout has none. They are
+# deterministic, so rebuilding is cheaper than failing.
+if not (TRAIN_FILE.exists() and VALIDATION_FILE.exists()):
+    print("dataset/processed is empty - building it from samples/ ...\n")
+    dataset_builder.build()
 
 
 train_texts, train_labels = load_csv(TRAIN_FILE)

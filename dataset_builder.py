@@ -12,6 +12,10 @@ SOURCE_FILES = [
     BASE_DIR / "samples" / "v1_1_final_holdout_prompts.txt",
 ]
 
+PROCESSED_DIR = BASE_DIR / "dataset" / "processed"
+TRAIN_FILE = PROCESSED_DIR / "train.csv"
+VALIDATION_FILE = PROCESSED_DIR / "validation.csv"
+
 
 def load_labeled_file(path):
     samples = []
@@ -177,27 +181,43 @@ def print_split_stats(name, samples):
     print("-" * 50)
 
 
-if __name__ == "__main__":
+def build():
+    """Read samples/, de-duplicate, split, and write the CSVs.
+
+    Importable so anything that needs the split can produce it instead
+    of failing on a checkout where dataset/processed is empty -- the
+    CSVs are git-ignored because they regenerate deterministically.
+    """
     all_samples = []
 
     for source_file in SOURCE_FILES:
-        samples = load_labeled_file(source_file)
-        all_samples.extend(samples)
+        all_samples.extend(load_labeled_file(source_file))
 
-    unique_samples, duplicates, conflicts = analyze_dataset(
-        all_samples
-    )
-
-    train_samples, validation_samples = split_dataset(
-        unique_samples
-    )
-
-    PROCESSED_DIR = BASE_DIR / "dataset" / "processed"
-    TRAIN_FILE = PROCESSED_DIR / "train.csv"
-    VALIDATION_FILE = PROCESSED_DIR / "validation.csv"
+    unique_samples, duplicates, conflicts = analyze_dataset(all_samples)
+    train_samples, validation_samples = split_dataset(unique_samples)
 
     write_csv(TRAIN_FILE, train_samples)
     write_csv(VALIDATION_FILE, validation_samples)
+
+    return {
+        "all_samples": all_samples,
+        "unique_samples": unique_samples,
+        "duplicates": duplicates,
+        "conflicts": conflicts,
+        "train_samples": train_samples,
+        "validation_samples": validation_samples,
+    }
+
+
+if __name__ == "__main__":
+    result = build()
+
+    all_samples = result["all_samples"]
+    unique_samples = result["unique_samples"]
+    duplicates = result["duplicates"]
+    conflicts = result["conflicts"]
+    train_samples = result["train_samples"]
+    validation_samples = result["validation_samples"]
 
     malicious_count = sum(
         sample["label"] == 1

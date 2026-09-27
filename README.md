@@ -154,6 +154,20 @@ The suite also pins the two bugs that cost detections silently — analyzer stat
 leaking between calls, and the cross-sentence context patterns that were once
 dropped by an edit.
 
+## Toward a learned classifier
+
+The holdout says plainly what rules cannot do: attacks that share no
+vocabulary with any pattern are not reachable by writing more patterns. The
+groundwork for a learned alternative is in place — `dataset_builder.py` merges
+the five labelled files into one corpus, checks it for duplicates and for the
+same prompt carrying different labels in different files, and writes a
+stratified train/validation split under a fixed seed. `tfidf_demo.py` turns
+that split into a TF-IDF matrix.
+
+Both are deterministic and rebuild themselves, so the split is git-ignored
+rather than committed: a second copy of the corpus could drift from
+`samples/`.
+
 ## Limitations
 
 **Recall is the weak half.** Precision is 100% on all five sets: none of the
@@ -185,20 +199,31 @@ malicious".
 ## Project layout
 
 ```
-main.py         interactive menu: single prompt or whole file
-normalizer.py   canonicalizes paraphrases and synonyms before matching
-models.py       SecurityRule — pattern compilation and segment matching
-rules.py        the rule definitions and the shared discussion guard
-analyzer.py     scoring and risk level
-reporter.py     report and summary formatting
-evaluator.py    metrics over the five datasets
-tests/          pytest suite
-samples/        prompt datasets
-reports/        generated output (git-ignored)
+main.py            interactive menu: single prompt or whole file
+normalizer.py      canonicalizes paraphrases and synonyms before matching
+models.py          SecurityRule — pattern compilation and segment matching
+rules.py           the rule definitions and the shared discussion guard
+analyzer.py        scoring and risk level
+reporter.py        report and summary formatting
+evaluator.py       metrics over the five datasets
+dataset_builder.py merges and audits the labelled files, writes the split
+tfidf_demo.py      TF-IDF representation of the split (groundwork)
+tests/             pytest suite
+samples/           prompt datasets
+dataset/           generated train/validation split (git-ignored)
+reports/           generated output (git-ignored)
 ```
 
-Python 3.13, standard library only. `pytest` is needed to run the tests, and
-nothing else.
+The scanner and the evaluator run on the standard library alone — `main.py`
+and `evaluator.py` need nothing installed. The machine-learning groundwork
+needs scikit-learn, and the tests need pytest:
+
+```
+pip install -r requirements.txt       # scikit-learn
+pip install -r requirements-dev.txt   # the above plus pytest
+```
+
+Python 3.13.
 
 ## License
 

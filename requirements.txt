@@ -1,0 +1,3 @@
+# Runtime: the scanner itself (main.py, evaluator.py) needs none of these.
+# Only the machine-learning groundwork does.
+scikit-learn>=1.4
