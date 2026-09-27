@@ -163,6 +163,37 @@ def write_csv(path, samples):
         writer.writerows(samples)
 
 
+def load_csv(path):
+    """Read a written split back into parallel texts and labels."""
+    texts = []
+    labels = []
+
+    with path.open("r", encoding="utf-8", newline="") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            texts.append(row["text"])
+            labels.append(int(row["label"]))
+
+    return texts, labels
+
+
+def ensure_built():
+    """Build the split unless it is already on disk.
+
+    dataset/processed is git-ignored because the split regenerates
+    deterministically, so a fresh checkout has nothing to read. Anything
+    consuming the CSVs calls this first rather than crashing on a
+    missing file.
+    """
+    if TRAIN_FILE.exists() and VALIDATION_FILE.exists():
+        return False
+
+    print("dataset/processed is empty - building it from samples/ ...\n")
+    build()
+    return True
+
+
 def print_split_stats(name, samples):
     malicious_count = sum(
         sample["label"] == 1

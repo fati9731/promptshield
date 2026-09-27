@@ -1,6 +1,3 @@
-from pathlib import Path
-import csv
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -11,41 +8,15 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-
-BASE_DIR = Path(__file__).resolve().parent
-
-TRAIN_FILE = (
-    BASE_DIR
-    / "dataset"
-    / "processed"
-    / "train.csv"
-)
-
-VALIDATION_FILE = (
-    BASE_DIR
-    / "dataset"
-    / "processed"
-    / "validation.csv"
+from dataset_builder import (
+    TRAIN_FILE,
+    VALIDATION_FILE,
+    ensure_built,
+    load_csv,
 )
 
 
-def load_csv(path):
-    texts = []
-    labels = []
-
-    with path.open(
-        "r",
-        encoding="utf-8",
-        newline=""
-    ) as file:
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            texts.append(row["text"])
-            labels.append(int(row["label"]))
-
-    return texts, labels
-
+ensure_built()
 
 train_texts, train_labels = load_csv(TRAIN_FILE)
 
@@ -161,3 +132,31 @@ for text, true_label, predicted_label in zip(
 
 if fn_count == 0:
     print("None")
+
+feature_names = vectorizer.get_feature_names_out()
+coefficients = model.coef_[0]
+
+feature_weights = list(
+    zip(feature_names, coefficients)
+)
+
+feature_weights.sort(
+    key=lambda item: item[1],
+    reverse=True
+)
+
+
+print()
+print("Top Malicious Features")
+print("-" * 60)
+
+for feature, weight in feature_weights[:15]:
+    print(f"{feature:<20} {weight:.4f}")
+
+
+print()
+print("Top Safe Features")
+print("-" * 60)
+
+for feature, weight in feature_weights[-15:]:
+    print(f"{feature:<20} {weight:.4f}")

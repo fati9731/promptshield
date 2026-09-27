@@ -1,33 +1,14 @@
-import csv
 from sklearn.feature_extraction.text import TfidfVectorizer
-import dataset_builder
-from dataset_builder import TRAIN_FILE, VALIDATION_FILE
+
+from dataset_builder import (
+    TRAIN_FILE,
+    VALIDATION_FILE,
+    ensure_built,
+    load_csv,
+)
 
 
-def load_csv(path):
-    texts = []
-    labels = []
-
-    with path.open(
-        "r",
-        encoding="utf-8",
-        newline=""
-    ) as file:
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            texts.append(row["text"])
-            labels.append(int(row["label"]))
-
-    return texts, labels
-
-
-# The CSVs are git-ignored, so a fresh checkout has none. They are
-# deterministic, so rebuilding is cheaper than failing.
-if not (TRAIN_FILE.exists() and VALIDATION_FILE.exists()):
-    print("dataset/processed is empty - building it from samples/ ...\n")
-    dataset_builder.build()
-
+ensure_built()
 
 train_texts, train_labels = load_csv(TRAIN_FILE)
 
