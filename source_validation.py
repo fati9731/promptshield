@@ -250,10 +250,6 @@ for source in sources:
     print(
         f"F1:        {result['f1'] * 100:.2f}%"
     )
-    print(
-        "Out-of-fold predictions:",
-        len(all_prediction_records)
-    )
 
     if result["false_positives"]:
         print()
@@ -303,6 +299,11 @@ print()
 print("=" * 70)
 print("Average Across Sources")
 print("=" * 70)
+
+print(
+    "Out-of-fold predictions:",
+    len(all_prediction_records)
+)
 
 print(
     f"Accuracy:  {average_accuracy * 100:.2f}%"
