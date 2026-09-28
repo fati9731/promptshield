@@ -10,10 +10,11 @@ retired from scoring and a fresh holdout is written. The headline number below
 is the one from the holdout that has never been tuned against — not the
 flattering one.
 
-Measured that way the rules reach 100% precision and 70.59% recall over 335
-out-of-fold prompts. [A learned baseline](#rules-against-a-learned-baseline)
-trades precision for coverage, and [running both](#combining-the-two) reaches
-99.41% recall while the rules add no false positives of their own.
+On [a 200-prompt holdout written after all development had stopped]
+(#final-evaluation), the rules reach 100% precision and 11% recall, and a
+learned classifier alongside them reaches 76% precision and 97% recall. Both
+numbers are worse than the ones measured during development — that gap is the
+most useful thing in this repository.
 
 ```
 $ python main.py
@@ -237,6 +238,60 @@ the rules contribute **zero** false positives the classifier did not already
 make, because their discussion guard is stricter than anything the classifier
 learned. Adding them is free, and buys 7 detections.
 
+These are out-of-fold numbers, not final ones. On the held-out set below the
+same union buys one detection, not seven.
+
+## Final evaluation
+
+Everything above is a development number. The rules were tuned against those
+files; the classifier was cross-validated on them. Both were measured on data
+written while the detector was being built, by the person building it.
+
+So a final holdout was written after development stopped — 200 prompts, 100
+safe and 100 malicious — and used exactly once:
+
+```
+python v2_final_evaluation.py
+```
+
+The script hashes the holdout file and prints the digest, and it intersects the
+holdout with every development prompt and refuses to run if they overlap, so
+"it was never trained on" is checked rather than asserted:
+
+```
+Final holdout SHA-256: a773f648dbc1b4f84f40dcada92bf37af6eea4ec1d1978f1d27aefd2206668b6
+Exact development/final overlap: 0
+```
+
+| on 200 genuinely unseen prompts | Accuracy | Precision | Recall | F1 |
+| --- | --- | --- | --- | --- |
+| rules | 55.50% | **100.00%** | 11.00% | 19.82% |
+| TF-IDF + logistic regression | 83.00% | 76.19% | 96.00% | 84.96% |
+| either one fires | **83.50%** | 76.38% | **97.00%** | **85.46%** |
+
+### What the gap says
+
+| | out-of-fold | final holdout |
+| --- | --- | --- |
+| rule recall | 70.59% | 11.00% |
+| classifier precision | 93.10% | 76.19% |
+| classifier recall | 95.29% | 96.00% |
+
+Recall held; precision did not. The classifier still finds the attacks, but on
+prompts it has no stylistic familiarity with it flags 30 of 100 benign ones —
+against 12 of 165 during cross-validation. The out-of-fold estimate was
+optimistic because all five development files were written by one person in one
+sitting each, so holding out a file still left the model trained on that
+person's phrasing. A held-out *file* is not a held-out *distribution*.
+
+The rules fall further, 70.59% to 11.00% recall, and keep perfect precision —
+consistent with what they are. A pattern matches the phrasings someone thought
+of; new prompts are written by someone free to phrase them otherwise.
+
+The hybrid gains almost nothing here: one extra detection over the classifier
+alone, for no extra false positives. The claim that adding the rules is free
+survives; the claim that it is worth much does not.
+
 ## Limitations
 
 **Recall is the weak half.** Precision is 100% on all five sets: none of the
@@ -266,10 +321,16 @@ inside every script that needs it — nothing is persisted or calibrated, and
 none of it is wired into `main.py`, which still runs the rules alone. The
 hybrid result is a measurement, not a feature.
 
+**One author.** Every prompt in this repository — development and holdout — was
+written by the same person. The final holdout was written after development
+stopped, which removes the tuning leak, but not the shared vocabulary and
+habits of one writer. The 76% precision it reports is still an upper bound on
+what real traffic would give.
+
 **Not a production guardrail.** This is a detection exercise. A real deployment
-would persist the model, tune the threshold against its own traffic rather
-than this corpus, and be re-measured on prompts written by someone other than
-the author of the training set.
+would persist the model, tune the threshold against its own traffic rather than
+this corpus, and treat the 30 false positives above as the blocking problem
+they would be.
 
 ## Project layout
 
@@ -285,7 +346,8 @@ dataset_builder.py merges and audits the labelled files, writes the split
 tfidf_demo.py      TF-IDF representation of the split
 ml_baseline.py     TF-IDF + logistic regression on the random split
 source_validation.py  leave-one-source-out evaluation and threshold sweep
-hybrid_evaluation.py  rules, classifier, and both together
+hybrid_evaluation.py  rules, classifier, and both together (out-of-fold)
+v2_final_evaluation.py  the one-shot run against the untouched holdout
 tests/             pytest suite
 samples/           prompt datasets
 dataset/           generated train/validation split (git-ignored)
@@ -310,10 +372,11 @@ MIT — see [LICENSE](LICENSE).
 ## Status
 
 `v2.0.0` — the rule engine of `v1.0.0` plus a labelled corpus, a learned
-baseline, leave-one-source-out evaluation, a threshold sweep, and the hybrid
-result above.
+baseline, leave-one-source-out evaluation, a threshold sweep, the hybrid
+result, and a one-shot final evaluation on an untouched holdout.
 
-Next up, in priority order: wiring the hybrid decision into `main.py` instead
-of leaving it in an evaluation script, input normalization for obfuscated text
-(spacing, homoglyphs, base64), and a holdout written by someone other than the
-author.
+Next up, in priority order: the classifier's 30 false positives, which are now
+the limiting number rather than recall; wiring the hybrid decision into
+`main.py` instead of leaving it in an evaluation script; input normalization
+for obfuscated text (spacing, homoglyphs, base64); and prompts from a source
+other than this repository's author.
