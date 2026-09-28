@@ -10,10 +10,10 @@ retired from scoring and a fresh holdout is written. The headline number below
 is the one from the holdout that has never been tuned against — not the
 flattering one.
 
-Measured that way the rules reach 100% precision and 17% recall, which is the
-honest shape of the approach. [A learned baseline on the same unseen
-prompts](#rules-against-a-learned-baseline) reaches 98% recall for four false
-positives.
+Measured that way the rules reach 100% precision and 70.59% recall over 335
+out-of-fold prompts. [A learned baseline](#rules-against-a-learned-baseline)
+trades precision for coverage, and [running both](#combining-the-two) reaches
+99.41% recall while the rules add no false positives of their own.
 
 ```
 $ python main.py
@@ -202,6 +202,41 @@ The split itself is deterministic and rebuilds on demand, so `dataset/` is
 git-ignored rather than committed: a second copy of the corpus could drift
 from `samples/`.
 
+## Combining the two
+
+Comparing the detectors answered which is better on its own. The useful
+question is whether they fail on the same prompts. `hybrid_evaluation.py` runs
+both over every out-of-fold prediction and flags a prompt when *either* fires:
+
+```
+python hybrid_evaluation.py
+```
+
+| over 335 out-of-fold prompts | Accuracy | Precision | Recall | F1 |
+| --- | --- | --- | --- | --- |
+| rules | 85.07% | **100.00%** | 70.59% | 82.76% |
+| TF-IDF + logistic regression | 94.03% | 93.10% | 95.29% | 94.19% |
+| **either one fires** | **96.12%** | 93.37% | **99.41%** | **96.30%** |
+
+They do not fail on the same prompts:
+
+```
+Both correct:            266
+ML correct, rule wrong:   49
+Rule correct, ML wrong:   19
+Both wrong:                1
+```
+
+The rules catch 7 attacks the classifier scores below the threshold, and the
+classifier catches 49 the patterns have no phrasing for. Only one malicious
+prompt in 335 defeats both.
+
+The precision column is what makes the combination worth having. Union
+normally costs precision — every detector's false positives accumulate — but
+the rules contribute **zero** false positives the classifier did not already
+make, because their discussion guard is stricter than anything the classifier
+learned. Adding them is free, and buys 7 detections.
+
 ## Limitations
 
 **Recall is the weak half.** Precision is 100% on all five sets: none of the
@@ -227,12 +262,14 @@ Spaced-out text (`I g n o r e`), homoglyphs and other Unicode tricks, and
 base64 payloads all pass straight through. Only English is covered.
 
 **The classifier is a baseline, not a system.** It is fitted and thrown away
-inside one script — nothing is persisted, calibrated, or wired into `main.py`,
-and its false positives are not analyzed the way the rules' are.
+inside every script that needs it — nothing is persisted or calibrated, and
+none of it is wired into `main.py`, which still runs the rules alone. The
+hybrid result is a measurement, not a feature.
 
 **Not a production guardrail.** This is a detection exercise. A real deployment
-would combine the two, persist the model, and tune the decision threshold
-against its own traffic rather than "any rule fired means malicious".
+would persist the model, tune the threshold against its own traffic rather
+than this corpus, and be re-measured on prompts written by someone other than
+the author of the training set.
 
 ## Project layout
 
@@ -247,7 +284,8 @@ evaluator.py       metrics over the five datasets
 dataset_builder.py merges and audits the labelled files, writes the split
 tfidf_demo.py      TF-IDF representation of the split
 ml_baseline.py     TF-IDF + logistic regression on the random split
-source_validation.py  leave-one-source-out evaluation (the comparable number)
+source_validation.py  leave-one-source-out evaluation and threshold sweep
+hybrid_evaluation.py  rules, classifier, and both together
 tests/             pytest suite
 samples/           prompt datasets
 dataset/           generated train/validation split (git-ignored)
@@ -271,7 +309,11 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-`v1.0.0` is tagged; the current tree is v1.1. Next up, in priority order:
-combining the rules and the classifier instead of comparing them, input
-normalization for obfuscated text, and a holdout written by someone other than
-the author.
+`v2.0.0` — the rule engine of `v1.0.0` plus a labelled corpus, a learned
+baseline, leave-one-source-out evaluation, a threshold sweep, and the hybrid
+result above.
+
+Next up, in priority order: wiring the hybrid decision into `main.py` instead
+of leaving it in an evaluation script, input normalization for obfuscated text
+(spacing, homoglyphs, base64), and a holdout written by someone other than the
+author.

@@ -1,5 +1,3 @@
-import csv
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -10,28 +8,12 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-from dataset_builder import TRAIN_FILE, VALIDATION_FILE, ensure_built
-
-
-def load_rows(path):
-    """Rows with their source file kept, which the split loader drops."""
-    samples = []
-
-    with path.open(
-        "r",
-        encoding="utf-8",
-        newline=""
-    ) as file:
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            samples.append({
-                "text": row["text"],
-                "label": int(row["label"]),
-                "source": row["source"],
-            })
-
-    return samples
+from dataset_builder import (
+    TRAIN_FILE,
+    VALIDATION_FILE,
+    ensure_built,
+    load_rows,
+)
 
 
 ensure_built()

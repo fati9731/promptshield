@@ -178,6 +178,24 @@ def load_csv(path):
     return texts, labels
 
 
+def load_rows(path):
+    """Read a split back as full rows, keeping the source file column.
+
+    load_csv() drops it; leave-one-source-out evaluation is built on it.
+    """
+    rows = []
+
+    with path.open("r", encoding="utf-8", newline="") as file:
+        for row in csv.DictReader(file):
+            rows.append({
+                "text": row["text"],
+                "label": int(row["label"]),
+                "source": row["source"],
+            })
+
+    return rows
+
+
 def ensure_built():
     """Build the split unless it is already on disk.
 
