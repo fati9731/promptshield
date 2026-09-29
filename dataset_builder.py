@@ -10,6 +10,12 @@ SOURCE_FILES = [
     BASE_DIR / "samples" / "adversarial_dev_prompts.txt",
     BASE_DIR / "samples" / "final_holdout_prompts.txt",
     BASE_DIR / "samples" / "v1_1_final_holdout_prompts.txt",
+    BASE_DIR / "samples" / "v3_hard_examples.txt",
+    # v2_final_holdout_prompts.txt is deliberately absent. It was scored
+    # once and is spent, but folding it in now would leave nothing unseen
+    # for v2_final_evaluation.py and v3_error_analysis.py to measure --
+    # their overlap guard would (correctly) refuse to run. It joins this
+    # list in the same commit that adds a v3 holdout to replace it.
 ]
 
 PROCESSED_DIR = BASE_DIR / "dataset" / "processed"
