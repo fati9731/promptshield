@@ -10,12 +10,16 @@ SOURCE_FILES = [
     BASE_DIR / "samples" / "adversarial_dev_prompts.txt",
     BASE_DIR / "samples" / "final_holdout_prompts.txt",
     BASE_DIR / "samples" / "v1_1_final_holdout_prompts.txt",
+    BASE_DIR / "samples" / "v2_final_holdout_prompts.txt",
     BASE_DIR / "samples" / "v3_hard_examples.txt",
-    # v2_final_holdout_prompts.txt is deliberately absent. It was scored
-    # once and is spent, but folding it in now would leave nothing unseen
-    # for v2_final_evaluation.py and v3_error_analysis.py to measure --
-    # their overlap guard would (correctly) refuse to run. It joins this
-    # list in the same commit that adds a v3 holdout to replace it.
+    BASE_DIR / "samples" / "v3_hard_roleplay.txt",
+    BASE_DIR / "samples" / "v3_hard_document_override.txt",
+    BASE_DIR / "samples" / "v3_hard_technical_context.txt",
+    # v2_final_holdout_prompts.txt was scored once, reported, and is now
+    # spent, so it joins the corpus as training data. The two scripts that
+    # measured against it detect this and retire themselves rather than
+    # grading the model on its own training set. v3 needs a holdout of its
+    # own before it can claim a final number.
 ]
 
 PROCESSED_DIR = BASE_DIR / "dataset" / "processed"

@@ -280,7 +280,21 @@ print(
     len(overlap)
 )
 
+if len(overlap) == len(final_keys):
+    # Every prompt is in the corpus: this holdout was scored once and then
+    # folded into development data for the next version. The recorded
+    # result stands in the README; re-running it here would only measure
+    # the model against its own training set.
+    print()
+    print(
+        "This holdout has been retired into the development corpus.\n"
+        "Its one-time result is recorded in the README. Score a new\n"
+        "version against a holdout that has never been trained on."
+    )
+    raise SystemExit(0)
+
 if overlap:
+    # A partial overlap is the accident this check exists to catch.
     raise ValueError(
         "Final holdout overlaps "
         "with development data."
