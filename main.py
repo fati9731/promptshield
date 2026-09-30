@@ -1,7 +1,7 @@
 from pathlib import Path
-from rules import rules
-from analyzer import PromptAnalyzer
-from reporter import format_result, format_summary
+
+from detector import HybridDetector
+from reporter import format_analysis, format_summary
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -18,27 +18,28 @@ def create_stats():
         "threats": 0
     }
 
-def record(stats, risk_level, detected_rules):
+def record(stats, result):
     stats["total"] += 1
-    stats[risk_level] += 1
-    stats["threats"] += len(detected_rules)
+    stats[result["risk"]] += 1
 
-def analyze_single_prompt(analyzer, session_stats):
-    prompt = input("Enter the prompt to analyze: ").strip().lower()
+    if result["hybrid_decision"]:
+        stats["threats"] += 1
+
+def analyze_single_prompt(detector, session_stats):
+    prompt = input("Enter the prompt to analyze: ").strip()
 
     if not prompt:
         print("Prompt cannot be empty.")
         return
 
-    score, detected_rules = analyzer.analyze(prompt)
-    risk_level = analyzer.get_risk_level()
+    result = detector.analyze(prompt)
+    record(session_stats, result)
 
-    record(session_stats, risk_level, detected_rules)
-
-    print(format_result(prompt, score, risk_level, detected_rules))
+    print()
+    print(format_analysis(result))
     print(format_summary(session_stats, "Session Summary"))
 
-def analyze_prompts_from_file(analyzer, file_path, report_path, session_stats):
+def analyze_prompts_from_file(detector, file_path, report_path, session_stats):
     run_stats = create_stats()
 
     try:
@@ -49,26 +50,20 @@ def analyze_prompts_from_file(analyzer, file_path, report_path, session_stats):
                 report_file.write("======================\n\n")
 
                 for line in file:
-                    client_prompt = line.strip().lower()
+                    client_prompt = line.strip()
 
                     if not client_prompt:
                         continue
 
-                    score, detected_rules = analyzer.analyze(client_prompt)
-                    risk_level = analyzer.get_risk_level()
+                    result = detector.analyze(client_prompt)
 
-                    record(run_stats, risk_level, detected_rules)
-                    record(session_stats, risk_level, detected_rules)
+                    record(run_stats, result)
+                    record(session_stats, result)
 
-                    result = format_result(
-                        client_prompt,
-                        score,
-                        risk_level,
-                        detected_rules
-                    )
+                    rendered = format_analysis(result)
 
-                    print(result)
-                    report_file.write(result)
+                    print(rendered)
+                    report_file.write(rendered)
 
                 report_file.write(format_summary(run_stats))
 
@@ -79,8 +74,22 @@ def analyze_prompts_from_file(analyzer, file_path, report_path, session_stats):
         print(f"File error: {error}")
 
 def main():
-    analyzer = PromptAnalyzer(rules)
+    detector = HybridDetector()
     session_stats = create_stats()
+
+    print("\nPromptShield")
+    print("========================")
+    print("Loading the classifier ...")
+
+    if detector.model_available:
+        print(
+            "Rule engine + TF-IDF classifier "
+            f"(threshold {detector.threshold:.2f})"
+        )
+    else:
+        # The rules alone are what v1 shipped; say so rather than reporting
+        # a hybrid decision that is really one detector.
+        print(f"Rules only - {detector.unavailable_reason}")
 
     while True:
         print("\nPromptShield")
@@ -92,11 +101,11 @@ def main():
         choice = input("\nChoose an option: ")
 
         if choice == "1":
-            analyze_single_prompt(analyzer, session_stats)
+            analyze_single_prompt(detector, session_stats)
 
         elif choice == "2":
             analyze_prompts_from_file(
-                analyzer, PROMPTS_FILE, REPORT_FILE, session_stats
+                detector, PROMPTS_FILE, REPORT_FILE, session_stats
             )
 
         elif choice == "3":
