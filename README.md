@@ -1,5 +1,7 @@
 # PromptShield
 
+[![CI](https://github.com/fati9731/promptshield/actions/workflows/ci.yml/badge.svg)](https://github.com/fati9731/promptshield/actions/workflows/ci.yml)
+
 PromptShield is an experimental hybrid prompt-injection detector. It combines a
 high-precision rule engine with a TF-IDF + logistic-regression classifier and
 flags a prompt when either fires.
@@ -162,14 +164,22 @@ pip install pytest
 pytest
 ```
 
-57 tests. The ones that matter are in `tests/test_rules.py`: every rule is
+71 tests. The ones that matter are in `tests/test_rules.py`: every rule is
 pinned by both an attack it must catch and a discussion of that same attack it
 must ignore. A rule that quietly broadens until it matches everything would
 pass the first half and fail the second.
 
-The suite also pins the two bugs that cost detections silently — analyzer state
-leaking between calls, and the cross-sentence context patterns that were once
-dropped by an edit.
+The suite also pins the bugs that cost detections silently — analyzer state
+leaking between calls, cross-sentence context patterns dropped by an edit, and
+the CLI degrading to rules-only without saying so.
+
+CI runs the suite on Python 3.11, 3.12 and 3.13, and separately runs every
+entry point from a clean checkout. `dataset/processed` is git-ignored, so a
+script that assumes it already exists passes locally and fails for anyone
+cloning — that happened four times during development, and the second job is
+the check that catches it. It also asserts that the classifier actually loaded,
+since rules-only is a legitimate fallback that must never be what CI silently
+tests.
 
 ## Rules against a learned baseline
 
